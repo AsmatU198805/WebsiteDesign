@@ -1,84 +1,134 @@
 ﻿@page "/Products"
-
 @rendermode InteractiveServer
 
 @using Radzen
 @using Radzen.Blazor
+
 <h3>Products List</h3>
 <br />
 
+<!-- Category Buttons -->
+<div class="d-flex gap-3 mb-4">
+    <button class="category-btn @(selectedCategory == "All" ? "active" : "")" @onclick="ShowAll">All</button>
+    <button class="category-btn @(selectedCategory == "Sports" ? "active" : "")" @onclick="ShowSports">Sports</button>
+    <button class="category-btn @(selectedCategory == "Electronics" ? "active" : "")" @onclick="ShowElectronics">Electronics</button>
+    <button class="category-btn @(selectedCategory == "Automobile" ? "active" : "")" @onclick="ShowAutomobile">Automobile</button>
+    <button class="category-btn @(selectedCategory == "Lifestyle" ? "active" : "")" @onclick="ShowLifestyle">Lifestyle</button>
+</div>
 
-<br>
 <div class="container">
-
-    <!-- Row 1 -->
     <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/bag.jpg" style="width:80%" />
-                <div class="card-body">
-                    <h4 class="card-title">Leather Bag</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
+        @if (FilteredProducts == null || !FilteredProducts.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-secondary">No products in this category.</div>
             </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/mobile.png" style="width:60%" />
-                <div class="card-body">
-                    <h4 class="card-title">Mobile Phone</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
+        }
+        else
+        {
+            @foreach (var p in FilteredProducts)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img class="card-img-top img-fluid product-img" src="@p.Image" alt="@p.Name" />
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@p.Name</h5>
+                            <p class="card-text mb-2"><small class="text-muted">@p.Category</small></p>
+                            <a href="#" class="btn btn-primary mt-auto">View Details</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/laptop.jpg" style="width:80%" />
-                <div class="card-body">
-                    <h4 class="card-title">Laptop Corei5 8thGen</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
+            }
+        }
     </div>
-
-    <!-- Row 2 -->
-    <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/football.jpg" style="width:100%" />
-                <div class="card-body">
-                    <h4 class="card-title">FIFA Football</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/cricketbat.jpg" style="width:70%" />
-                <div class="card-body">
-                    <h4 class="card-title">Cricket Bat</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img class="card-img-top" src="/images/scooty.jpg" style="width:80%" />
-                <div class="card-body">
-                    <h4 class="card-title">Electric Scooty 800W</h4>
-                    <a href="#" class="btn btn-primary">View Details</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 @code {
+    string selectedCategory = "All";
 
+    // Product List
+    List<ProductModel> AllProducts = new()
+    {
+        new ProductModel { Name = "Leather Bag", Category = "Lifestyle", Image = "/images/bag.jpg" },
+        new ProductModel { Name = "Mobile Phone", Category = "Electronics", Image = "/images/mobile.png" },
+        new ProductModel { Name = "Laptop Corei5 8thGen", Category = "Electronics", Image = "/images/laptop.jpg" },
+        new ProductModel { Name = "FIFA Football", Category = "Sports", Image = "/images/football.jpg" },
+        new ProductModel { Name = "Cricket Bat", Category = "Sports", Image = "/images/cricketbat.jpg" },
+        new ProductModel { Name = "Electric Scooty 800W", Category = "Automobile", Image = "/images/scooty.jpg" }
+    };
+
+    List<ProductModel> FilteredProducts = new();
+
+    protected override void OnInitialized()
+    {
+        // Show all products initially
+        FilteredProducts = AllProducts.ToList();
+    }
+
+    // Helper methods to avoid quoting problems in Razor attributes
+    void ShowAll() => FilterCategory("All");
+    void ShowSports() => FilterCategory("Sports");
+    void ShowElectronics() => FilterCategory("Electronics");
+    void ShowAutomobile() => FilterCategory("Automobile");
+    void ShowLifestyle() => FilterCategory("Lifestyle");
+
+    void FilterCategory(string category)
+    {
+        selectedCategory = category;
+
+        if (category == "All")
+        {
+            FilteredProducts = AllProducts.ToList();
+        }
+        else
+        {
+            FilteredProducts = AllProducts
+                .Where(x => string.Equals(x.Category, category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+        StateHasChanged();
+    }
+
+    public class ProductModel
+    {
+        public string Name { get; set; } = "";
+        public string Category { get; set; } = "";
+        public string Image { get; set; } = "";
+    }
 }
+
+<style>
+    .category-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .normal-btn {
+        padding: 8px 15px;
+        background: #eee;
+        border: 1px solid #ccc;
+        cursor: pointer;
+    }
+
+    .active-btn {
+        padding: 8px 15px;
+        background: darkblue;
+        color: white;
+        border: 1px solid darkblue;
+        cursor: pointer;
+    }
+
+    .products-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .product-card {
+        width: 200px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+</style>
