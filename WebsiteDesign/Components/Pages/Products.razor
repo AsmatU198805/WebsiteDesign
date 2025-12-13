@@ -8,12 +8,13 @@
 <br />
 
 <!-- Category Buttons -->
-<div class="d-flex gap-3 mb-4">
-    <button class="category-btn @(selectedCategory == "All" ? "active" : "")" @onclick="ShowAll">All</button>
-    <button class="category-btn @(selectedCategory == "Sports" ? "active" : "")" @onclick="ShowSports">Sports</button>
-    <button class="category-btn @(selectedCategory == "Electronics" ? "active" : "")" @onclick="ShowElectronics">Electronics</button>
-    <button class="category-btn @(selectedCategory == "Automobile" ? "active" : "")" @onclick="ShowAutomobile">Automobile</button>
-    <button class="category-btn @(selectedCategory == "Lifestyle" ? "active" : "")" @onclick="ShowLifestyle">Lifestyle</button>
+<div class="btn-group mb-4" role="group">
+    <button class="btn @(selectedCategory == "All" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowAll">All</button>
+    <button class="btn @(selectedCategory == "Sports" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowSports">Sports</button>
+    <button class="btn @(selectedCategory == "Electronics" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowElectronics">Electronics</button>
+    <button class="btn @(selectedCategory == "Automobile" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowAutomobile">Automobile</button>
+    <button class="btn @(selectedCategory == "Lifestyle" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowLifestyle">Lifestyle</button>
+    <button class="btn @(selectedCategory == "Garments" ? "btn-primary" : "btn-outline-primary")" @onclick="ShowGarments">Garments</button>
 </div>
 
 <div class="container">
@@ -54,7 +55,8 @@
         new ProductModel { Name = "Laptop Corei5 8thGen", Category = "Electronics", Image = "/images/laptop.jpg" },
         new ProductModel { Name = "FIFA Football", Category = "Sports", Image = "/images/football.jpg" },
         new ProductModel { Name = "Cricket Bat", Category = "Sports", Image = "/images/cricketbat.jpg" },
-        new ProductModel { Name = "Electric Scooty 800W", Category = "Automobile", Image = "/images/scooty.jpg" }
+        new ProductModel { Name = "Electric Scooty 800W", Category = "Automobile", Image = "/images/scooty.jpg" },
+       
     };
 
     List<ProductModel> FilteredProducts = new();
@@ -65,12 +67,13 @@
         FilteredProducts = AllProducts.ToList();
     }
 
-    // Helper methods to avoid quoting problems in Razor attributes
+
     void ShowAll() => FilterCategory("All");
     void ShowSports() => FilterCategory("Sports");
     void ShowElectronics() => FilterCategory("Electronics");
     void ShowAutomobile() => FilterCategory("Automobile");
     void ShowLifestyle() => FilterCategory("Lifestyle");
+    void ShowGarments() => FilterCategory("Garments");
 
     void FilterCategory(string category)
     {
@@ -107,7 +110,7 @@
     .normal-btn {
         padding: 8px 15px;
         background: #eee;
-        border: 1px solid #ccc;
+        border: 1px solid white;
         cursor: pointer;
     }
 
