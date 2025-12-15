@@ -10,6 +10,7 @@ namespace WebsiteDesign.Services
             {
                 new ProductModel
                 {
+                    Id=1,
                     Name = "Leather Bag",
                     Category = "Lifestyle",
                     Image = "/images/bag.jpg",
@@ -17,6 +18,7 @@ namespace WebsiteDesign.Services
                 },
                 new ProductModel
                 {
+                    Id=2,
                     Name = "Mobile Phone",
                     Category = "Electronics",
                     Image = "/images/mobile.png",
@@ -24,6 +26,7 @@ namespace WebsiteDesign.Services
                 },
                 new ProductModel
                 {
+                    Id=3,
                     Name = "Laptop Corei5 8thGen",
                     Category = "Electronics",
                     Image = "/images/laptop.jpg",
@@ -31,6 +34,7 @@ namespace WebsiteDesign.Services
                 },
                 new ProductModel
                 {
+                    Id=4,
                     Name = "FIFA Football",
                     Category = "Sports",
                     Image = "/images/football.jpg",
@@ -38,6 +42,7 @@ namespace WebsiteDesign.Services
                 },
                 new ProductModel
                 {
+                    Id=5,
                     Name = "Cricket Bat",
                     Category = "Sports",
                     Image = "/images/cricketbat.jpg",
@@ -45,6 +50,7 @@ namespace WebsiteDesign.Services
                 },
                 new ProductModel
                 {
+                    Id=6,
                     Name = "Electric Scooty 800W",
                     Category = "Automobile",
                     Image = "/images/scooty.jpg",

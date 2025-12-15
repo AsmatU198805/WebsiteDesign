@@ -1,5 +1,7 @@
 using WebsiteDesign.Components;
 using WebsiteDesign.Services;
+using Blazored.LocalStorage;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddBlazoredLocalStorage();
 
 
 var app = builder.Build();

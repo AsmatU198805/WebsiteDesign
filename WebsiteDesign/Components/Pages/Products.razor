@@ -70,7 +70,7 @@
                             </p>
 
                             <button class="btn btn-primary mt-auto"
-                                    @onclick="() => GoToDetails(p.Name)">
+                                    @onclick="() => GoToDetails(p.Id)">
                                 View Details
                             </button>
                         </div>
@@ -113,9 +113,9 @@
                 .ToList();
     }
 
-    void GoToDetails(string productName)
+    void GoToDetails(int Id)
     {
-        var urlName = productName.Replace(" ", "");
-        Nav.NavigateTo($"/ProductDetails/{urlName}");
+        
+        Nav.NavigateTo($"/ProductDetails/{Id}");
     }
 }
