@@ -1,0 +1,66 @@
+﻿@page "/LocalStoreD"
+@rendermode InteractiveServer
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
+
+<h3>Local Store Data</h3>
+
+
+
+<input @bind-value="@inputData"   />
+<button @onclick="StoreData">Store Data</button>
+<button @onclick="RetrieveData"> Retrieve Data</button>
+
+
+<p> The Retrieved data from the local storage: @storedData</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@code {
+
+    private const string datakey = "localstoragekey";
+
+    private string? storedData;
+    private string? inputData;
+
+    private async Task StoreData()
+    {
+        if (!string.IsNullOrWhiteSpace(inputData))
+        {
+            await localStorage.SetItemAsync(datakey, inputData);
+            inputData = "";
+        }
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RetrieveData();
+        }
+    }
+
+
+    private async Task RetrieveData()
+    {
+        storedData = await localStorage.GetItemAsync<string>(datakey);
+
+    }
+
+}
