@@ -1,0 +1,90 @@
+﻿@page "/checkout"
+@inject CartService CartService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<h3>Checkout</h3>
+
+@if (!loaded)
+{
+    <p>Loading checkout...</p>
+}
+else if (!cart.Any())
+{
+    <div class="alert alert-warning">
+        Your cart is empty
+    </div>
+}
+else
+{
+    <div class="row">
+        <!-- LEFT: CUSTOMER INFO -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Customer Information</h5>
+
+                <input class="form-control mb-2" placeholder="Full Name" @bind="order.Name" />
+                <input class="form-control mb-2" placeholder="Email" @bind="order.Email" />
+                <input class="form-control mb-2" placeholder="Phone" @bind="order.Phone" />
+                <textarea class="form-control mb-2" placeholder="Address" @bind="order.Address"></textarea>
+
+                <button class="btn btn-success w-100"
+                        @onclick="PlaceOrder">
+                    Place Order
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: ORDER SUMMARY -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Order Summary</h5>
+
+                @foreach (var item in cart)
+                {
+                    <div class="d-flex justify-content-between">
+                        <span>@item.Name (x @item.Quantity)</span>
+                        <span>@(item.Price* item.Quantity)</span>
+                    </div>
+                }
+
+                <hr />
+
+                <h5 class="text-end">
+                    Total: <b>@total</b>
+                </h5>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    List<CartItem> cart = new();
+    bool loaded = false;
+    decimal total = 0;
+
+    OrderModel order = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            cart = await CartService.GetCart();
+            total = cart.Sum(x => x.Price * x.Quantity);
+            loaded = true;
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task PlaceOrder()
+    {
+        if (string.IsNullOrWhiteSpace(order.Name))
+            return;
+
+        // 🔹 Save order to DB later (API)
+
+        await CartService.ClearCart();
+
+        Nav.NavigateTo("/order-success");
+    }
+}

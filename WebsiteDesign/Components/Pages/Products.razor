@@ -4,6 +4,9 @@
 @using WebsiteDesign.Models
 @inject WebsiteDesign.Services.ProductService ProductService
 @inject NavigationManager Nav
+@inject WebsiteDesign.Services.CartService CartService
+
+
 
 <h3>Products List</h3>
 <br />
@@ -68,11 +71,20 @@
                             <p class="card-text mb-2">
                                 <small class="text-muted">@p.Category</small>
                             </p>
+                            <p class="card-text mb-2">
+                                <small class="text-muted">@p.Price</small>
+                            </p>
+                            <div class="d-flex gap-2 mt-auto">
+                                <button class="btn btn-outline-primary w-50"
+                                        @onclick="() => GoToDetails(p.Id)">
+                                    Details
+                                </button>
 
-                            <button class="btn btn-primary mt-auto"
-                                    @onclick="() => GoToDetails(p.Id)">
-                                View Details
-                            </button>
+                                <button class="btn btn-success w-50"
+                                        @onclick="() => AddToCart(p)">
+                                    Add to Cart
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -111,6 +123,12 @@
             : AllProducts
                 .Where(x => x.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
                 .ToList();
+    }
+
+
+    async Task AddToCart(ProductModel product)
+    {
+        await CartService.AddToCart(product);
     }
 
     void GoToDetails(int Id)

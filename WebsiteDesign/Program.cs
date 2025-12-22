@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<CartService>();
 
 
 var app = builder.Build();

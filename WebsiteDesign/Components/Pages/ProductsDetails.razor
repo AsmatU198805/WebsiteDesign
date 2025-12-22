@@ -16,7 +16,9 @@
 else
 {
     <div class="card" style="max-width: 420px;">
-        <img src="@product.Image ?? " /images/placeholder.png"" class="card-img-top" alt="@product.Name" />
+        <img src="@(product.Image ?? "/images/placeholder.png")"
+             class="card-img-top"
+             alt="@product.Name" />
 
         <div class="card-body">
             <h5>@product.Name</h5>
@@ -43,9 +45,9 @@ else
             product = products.FirstOrDefault(p => p.Id == Id);
             StateHasChanged();
         }
-        catch(Exception ed )
+        catch(Exception ex )
         {
-            int i=0;
+            Console.WriteLine(ex.Message);
         }
 
 

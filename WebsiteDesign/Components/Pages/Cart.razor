@@ -1,0 +1,68 @@
+﻿@page "/cart"
+@inject CartService CartService
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+
+<h3>My Cart</h3>
+
+@if (!loaded)
+{
+    <p>Loading cart...</p>
+}
+else if (cart.Count == 0)
+{
+    <div class="alert alert-info">Cart is empty</div>
+}
+else
+{
+    @foreach (var item in cart)
+    {
+        <div class="card mb-2 p-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>
+                    <b>@item.Name</b> (x @item.Quantity)
+                </span>
+                <span>@(item.Quantity* item.Price)</span>
+                <button class="btn btn-sm btn-danger"
+                        @onclick="() => Remove(item.ProductId)">
+                    Remove
+                </button>
+            </div>
+        </div>
+    }
+
+    <!-- Checkout button on the right -->
+    <div class="text-end mt-3">
+        <button class="btn btn-success" @onclick="GoToCheckout">
+            <i class="fas fa-shopping-cart"></i> <!-- Font Awesome cart icon -->
+            Check Out
+        </button>
+    </div>
+}
+
+@code {
+    List<CartItem> cart = new();
+    bool loaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            cart = await CartService.GetCart();
+            loaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task Remove(int id)
+    {
+        await CartService.RemoveFromCart(id);
+        cart = await CartService.GetCart();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    void GoToCheckout()
+    {
+        Nav.NavigateTo("/checkout");
+    }
+}

@@ -1,21 +1,63 @@
-﻿<header class="top-nav">
-    <div class="nav-container">
-        <!-- SHOPLIVE title -->
-        <div class="logo">
-            SHOPLIVE
-        </div>
+﻿@inject CartService CartService
 
-        <!-- Radzen Menu -->
+<header class="top-nav">
+    <div class="nav-container">
+        <div class="logo">SHOPLIVE</div>
+
         <div class="nav-center">
             <RadzenMenu Orientation="Orientation.Horizontal"
                         Style="background: transparent; color: white; border: none; font-size: 17px;">
 
                 <RadzenMenuItem Text="Home" Path="/" Icon="home" />
-              
+
                 <RadzenMenuItem Text="Products" Path="/Products" Icon="shopping_cart" />
-                <RadzenMenuItem Text="Shopping Cart" Path="/Shopping Cart" Icon="info" />
-                <RadzenMenuItem Text="My Account" Path="/My Account" Icon="phone" />
+
+                <!-- CART WITH BADGE -->
+                <RadzenMenuItem Path="/Cart">
+                    <Template>
+                        <span class="position-relative">
+                            🛒 Cart
+                            @if (cartCount > 0)
+                            {
+                                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle ms-1">
+                                    @cartCount
+                                </span>
+                            }
+                        </span>
+                    </Template>
+                </RadzenMenuItem>
+
+                
             </RadzenMenu>
         </div>
     </div>
 </header>
+
+@code {
+    int cartCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            cartCount = await CartService.GetCartCount();
+
+            // 🔔 SUBSCRIBE TO EVENT
+            CartService.OnCartChanged += UpdateCartCount;
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async void UpdateCartCount()
+    {
+        cartCount = await CartService.GetCartCount();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // 🔕 UNSUBSCRIBE (VERY IMPORTANT)
+        CartService.OnCartChanged -= UpdateCartCount;
+    }
+}
