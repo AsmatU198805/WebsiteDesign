@@ -33,8 +33,7 @@ else
 
     <!-- Checkout button on the right -->
     <div class="text-end mt-3">
-        <button class="btn btn-success" @onclick="GoToCheckout">
-            <i class="fas fa-shopping-cart"></i> <!-- Font Awesome cart icon -->
+        <button class="btn btn-success" @onclick="GoToCheckout" disabled="@(cart.Count == 0)">
             Check Out
         </button>
     </div>

@@ -12,6 +12,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<CartService>();
 
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

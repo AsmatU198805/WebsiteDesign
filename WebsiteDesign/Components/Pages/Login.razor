@@ -1,0 +1,221 @@
+﻿@page "/Auth"
+@using System.Text.Json
+@rendermode InteractiveServer
+
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+
+        <!-- ================= LOGIN CARD ================= -->
+        <div class="col-md-5">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Login</h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input class="form-control"
+                               @bind="login.Username"
+                               disabled="@isLoading" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password"
+                               class="form-control"
+                               @bind="login.Password"
+                               disabled="@isLoading" />
+                    </div>
+
+                    <button class="btn btn-primary w-100"
+                            disabled="@isLoading"
+                            @onclick="LoginUser">
+                        @(isLoading ? "Logging in..." : "Login")
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(loginMessage))
+                    {
+                        <div class="alert alert-success mt-3 text-center">
+                            @loginMessage
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(loginError))
+                    {
+                        <div class="alert alert-danger mt-3 text-center">
+                            @loginError
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SIGNUP CARD ================= -->
+        <div class="col-md-5">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white text-center">
+                    <h4>Sign Up</h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control"
+                               @bind="signup.Name" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input class="form-control"
+                               @bind="signup.UserName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email"
+                               class="form-control"
+                               @bind="signup.Email" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password"
+                               class="form-control"
+                               @bind="signup.Password" />
+                    </div>
+
+                    <button class="btn btn-success w-100"
+                            @onclick="RegisterUser">
+                        Sign Up
+                    </button>
+
+                    @if (!string.IsNullOrWhiteSpace(signupMessage))
+                    {
+                        <div class="alert alert-success mt-3 text-center">
+                            @signupMessage
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(signupError))
+                    {
+                        <div class="alert alert-danger mt-3 text-center">
+                            @signupError
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@code {
+
+    // ======================
+    // STATE
+    // ======================
+    LoginRequest login = new();
+    SignUpRequest signup = new();
+
+    bool isLoading;
+
+    string loginMessage;
+    string loginError;
+
+    string signupMessage;
+    string signupError;
+
+    // ======================
+    // LOGIN
+    // ======================
+    private async Task LoginUser()
+    {
+        isLoading = true;
+        loginMessage = "";
+        loginError = "";
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                "http://localhost:5138/api/Users/login", login);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var user = await response.Content.ReadFromJsonAsync<User>();
+
+                if (user != null)
+                {
+                    loginMessage = $"{user.Username} logged in successfully";
+
+                    await JS.InvokeVoidAsync(
+                        "localStorage.setItem",
+                        "loggedUser",
+                        JsonSerializer.Serialize(user));
+                }
+                else
+                {
+                    loginError = "User data not found.";
+                }
+            }
+            else
+            {
+                loginError = "Invalid username or password";
+            }
+        }
+        catch
+        {
+            loginError = "Server error. Please try again.";
+        }
+
+        isLoading = false;
+    }
+
+    // ======================
+    // SIGN UP
+    // ======================
+    private async Task RegisterUser()
+    {
+        signupMessage = "";
+        signupError = "";
+
+        var response = await Http.PostAsJsonAsync(
+            "http://localhost:5138/api/Users", signup);
+
+        if (response.IsSuccessStatusCode)
+        {
+            signupMessage = "User registered successfully!";
+            signup = new SignUpRequest();
+        }
+        else
+        {
+            signupError = "Error registering user.";
+        }
+    }
+
+    // ======================
+    // MODELS
+    // ======================
+    public class LoginRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class SignUpRequest
+    {
+        public string Name { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+    }
+}

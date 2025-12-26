@@ -1,0 +1,39 @@
+﻿@page "/UserSignUp"
+@using WebsiteDesign.Models
+@rendermode InteractiveServer
+@inject HttpClient Http
+@using Radzen
+@using Radzen.Blazor
+
+<h3>User SignUp</h3>
+
+<RadzenTemplateForm Data="@user" TItem="User" Submit="@OnSubmit">
+    <RadzenTextBox @bind-Value="user.Name" Name="Name" Placeholder="Full Name" />
+    <RadzenTextBox @bind-Value="user.UserName" Name="UserName" Placeholder="Username" />
+    <RadzenTextBox @bind-Value="user.Email" Name="Email" Placeholder="Email" />
+    <RadzenTextBox @bind-Value="user.Password" Name="Password" Placeholder="Password" Type="password" />
+    <RadzenButton ButtonType="ButtonType.Submit" Text="Sign Up" />
+</RadzenTemplateForm>
+
+<p>@message</p>
+
+@code {
+    private User user = new User();
+    private string message = "";
+
+
+    private async Task OnSubmit(User user)
+    {
+        var response = await Http.PostAsJsonAsync("http://localhost:5138/api/Users", user);
+        if (response.IsSuccessStatusCode)
+        {
+            message = "User registered successfully!";
+            
+        }
+        else
+        {
+            message = "Error registering user.";
+        }
+        this.user = new User(); // reset form
+    }
+}

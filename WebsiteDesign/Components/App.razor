@@ -5,25 +5,46 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+
     <ResourcePreloader />
+
+    <!-- Radzen -->
     <link href="_content/Radzen.Blazor/css/default-base.css" rel="stylesheet" />
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet" />
 
-
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
+
+    <!-- MDB (Material Design Bootstrap) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+    <!-- App Styles -->
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["WebsiteDesign.styles.css"]" />
+
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
+
     <HeadOutlet />
 </head>
 
 <body>
+
+    <!-- Radzen -->
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 
     <Routes />
     <ReconnectModal />
+
+    <!-- MDB -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+
+    <!-- Blazor -->
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+
 </body>
 
 </html>
