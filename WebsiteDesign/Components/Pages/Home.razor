@@ -2,11 +2,12 @@
 @rendermode InteractiveServer
 @using System.Text.Json
 @inject IJSRuntime JS
+@using WebsiteDesign.Models
 
 <PageTitle>Home</PageTitle>
 
 <!-- ================== Top Bar ================== -->
-<div class="d-flex justify-content-end p-3 bg-light">
+<div class="d-flex justify-content-end p-1 bg-light">
     @if (!string.IsNullOrEmpty(loggedUsername))
     {
         <span>Hello, @loggedUsername!</span>
@@ -36,22 +37,22 @@
 </RadzenCarousel>
 
 @code {
-    string loggedUsername;
+    string? loggedUsername;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // JS interop works only after first render
-            var userJson = await JS.InvokeAsync<string>("localStorage.getItem", "loggedUser");
+            var userJson = await JS.InvokeAsync<string>(
+                "localStorage.getItem", "loggedUser");
+
             if (!string.IsNullOrEmpty(userJson))
             {
                 try
                 {
                     var user = JsonSerializer.Deserialize<User>(userJson);
-                    loggedUsername = user?.Username;
+                    loggedUsername = user?.UserName;
 
-                    // Refresh UI
                     StateHasChanged();
                 }
                 catch
@@ -60,11 +61,5 @@
                 }
             }
         }
-    }
-
-    public class User
-    {
-        public int Id { get; set; }
-        public string Username { get; set; }
     }
 }

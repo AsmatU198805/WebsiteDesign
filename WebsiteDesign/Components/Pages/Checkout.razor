@@ -4,6 +4,7 @@
 @inject IJSRuntime JS
 @inject HttpClient Http
 @rendermode InteractiveServer
+@using WebsiteDesign.Models
 
 <h3>Checkout</h3>
 
@@ -135,14 +136,7 @@ else
         }
     }
 
-    // Models
-    public class User
-    {
-        public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-    }
+
 
     public class OrderModel
     {

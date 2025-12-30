@@ -1,6 +1,7 @@
 ﻿@page "/Auth"
 @using System.Text.Json
 @rendermode InteractiveServer
+@using WebsiteDesign.Models
 
 @inject HttpClient Http
 @inject IJSRuntime JS
@@ -8,7 +9,7 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
 
-        <!-- ================= LOGIN CARD ================= -->
+        <!-- LOGIN CARD = -->
         <div class="col-md-5">
             <div class="card shadow mb-4">
                 <div class="card-header bg-primary text-white text-center">
@@ -54,7 +55,7 @@
             </div>
         </div>
 
-        <!-- ================= SIGNUP CARD ================= -->
+        <!--                      SIGNUP CARD                  -->
         <div class="col-md-5">
             <div class="card shadow mb-4">
                 <div class="card-header bg-success text-white text-center">
@@ -120,6 +121,7 @@
     // ======================
     LoginRequest login = new();
     SignUpRequest signup = new();
+    User ObjUser = new();
 
     bool isLoading;
 
@@ -149,7 +151,7 @@
 
                 if (user != null)
                 {
-                    loginMessage = $"{user.Username} logged in successfully";
+                    loginMessage = $"{ObjUser.UserName} logged in successfully";
 
                     await JS.InvokeVoidAsync(
                         "localStorage.setItem",
@@ -213,11 +215,5 @@
         public string Password { get; set; }
     }
 
-    public class User
-    {
-        public int UserId { get; set; }
-        public string Username { get; set; }
-        public string Name { get; set; }    // Full name
-        public string Email { get; set; }   // Email
-    }
+ 
 }
