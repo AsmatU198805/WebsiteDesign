@@ -11,8 +11,9 @@ namespace WebAPI.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<TblOrderMaster> TblOrderMaster { get; set; }
+        public DbSet<TblOrderDetail> TblOrderDetail { get; set; }
 
 
-      
     }
 }

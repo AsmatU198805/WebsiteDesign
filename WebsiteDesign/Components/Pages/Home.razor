@@ -1,20 +1,23 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-
-@using Radzen
-@using Radzen.Blazor
-
+@using System.Text.Json
+@inject IJSRuntime JS
 
 <PageTitle>Home</PageTitle>
 
+<!-- ================== Top Bar ================== -->
+<div class="d-flex justify-content-end p-3 bg-light">
+    @if (!string.IsNullOrEmpty(loggedUsername))
+    {
+        <span>Hello, @loggedUsername!</span>
+    }
+</div>
 
-
+<!-- ================== Carousel ================== -->
 <RadzenCarousel Style="width:100%; height:700px;"
                 AutoPlay="true"
                 AutoPlayInterval="3000">
-
     <Items>
-
         <RadzenCarouselItem>
             <img src="/images/banner1.jpg"
                  style="width:100%; height:100%; object-fit:cover;" />
@@ -29,13 +32,39 @@
             <img src="/images/banner3.jpg"
                  style="width:100%; height:100%; object-fit:cover;" />
         </RadzenCarouselItem>
-
     </Items>
-
 </RadzenCarousel>
 
-
-
 @code {
+    string loggedUsername;
 
-} 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // JS interop works only after first render
+            var userJson = await JS.InvokeAsync<string>("localStorage.getItem", "loggedUser");
+            if (!string.IsNullOrEmpty(userJson))
+            {
+                try
+                {
+                    var user = JsonSerializer.Deserialize<User>(userJson);
+                    loggedUsername = user?.Username;
+
+                    // Refresh UI
+                    StateHasChanged();
+                }
+                catch
+                {
+                    loggedUsername = null;
+                }
+            }
+        }
+    }
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+    }
+}

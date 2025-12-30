@@ -1,6 +1,8 @@
 ﻿@page "/checkout"
 @inject CartService CartService
 @inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject HttpClient Http
 @rendermode InteractiveServer
 
 <h3>Checkout</h3>
@@ -57,12 +59,19 @@ else
         </div>
     </div>
 }
+
 @code {
     List<CartItem> cart = new();
     bool loaded = false;
     decimal total = 0;
 
     OrderModel order = new();
+    User obj = new User();
+
+
+
+
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -70,8 +79,23 @@ else
         {
             cart = await CartService.GetCart();
             total = cart.Sum(x => x.Price * x.Quantity);
-            loaded = true;
 
+            var userJson = await JS.InvokeAsync<string>("localStorage.getItem", "loggedUser");
+            if (!string.IsNullOrEmpty(userJson))
+            {
+                try
+                {
+                    obj = System.Text.Json.JsonSerializer.Deserialize<User>(userJson);
+                    if (obj != null)
+                    {
+                        order.Name = obj.Name;
+                        order.Email = obj.Email;
+                    }
+                }
+                catch { }
+            }
+
+            loaded = true;
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -81,10 +105,50 @@ else
         if (string.IsNullOrWhiteSpace(order.Name))
             return;
 
-        // 🔹 Save order to DB later (API)
+        if (!cart.Any())
+            return;
 
-        await CartService.ClearCart();
+        // Build TblOrderMaster object to send to API
 
-        Nav.NavigateTo("/order-success");
+        var orderMaster = new TblOrderMaster
+        {
+            UserId = obj.UserId,
+            OrderDetails = cart.Select(x => new TblOrderDetail
+            {
+                ProductId = x.ProductId,
+                Quantity = x.Quantity,
+                Rate = x.Price
+            }).ToList()
+        };
+
+        // Call API to save order
+        var response = await Http.PostAsJsonAsync("http://localhost:5138/api/Orders/place-order", orderMaster);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await CartService.ClearCart();
+            Nav.NavigateTo("/order-success");
+        }
+        else
+        {
+            Console.WriteLine("Order placement failed");
+        }
+    }
+
+    // Models
+    public class User
+    {
+        public int UserId { get; set; }
+        public string Username { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+    }
+
+    public class OrderModel
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
     }
 }
