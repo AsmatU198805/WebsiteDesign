@@ -1,13 +1,17 @@
-﻿@page "/ProductDetails/{Id:int}"
+﻿@page "/ProductDetails/{ProductId:int}"
 @rendermode InteractiveServer
 
 @using WebsiteDesign.Models
-@inject WebsiteDesign.Services.ProductService ProductService
+@inject HttpClient Http
 @inject NavigationManager Nav
 
-<h3>Product Details</h3>
+<h3 class="mb-4">Product Details</h3>
 
-@if (product == null)
+@if (loading)
+{
+    <p>Loading product...</p>
+}
+else if (product == null)
 {
     <div class="alert alert-danger">
         Product not found
@@ -15,16 +19,28 @@
 }
 else
 {
-    <div class="card" style="max-width: 420px;">
-        <img src="@(product.Image ?? "/images/placeholder.png")"
-             class="card-img-top"
-             alt="@product.Name" />
+    <div class="card" style="max-width: 520px;">
+        <img src="/images/@product.ImageUrl"
+             class="card-img-top img-fluid"
+             alt="@product.ProductName" />
 
         <div class="card-body">
-            <h5>@product.Name</h5>
-            <p><b>Category:</b> @product.Category</p>
-            <p>@product.Description</p>
-            <button class="btn btn-secondary" @onclick='() => Nav.NavigateTo("/Products")'>
+            <h5 class="card-title">@product.ProductName</h5>
+
+            <p class="text-muted">
+                <b>Category:</b> @product.ProductCategory
+            </p>
+
+            <p class="fw-bold fs-5">
+                Price: @product.Price
+            </p>
+
+            <p>
+                @product.Description
+            </p>
+
+            <button class="btn btn-secondary mt-3"
+                    @onclick="GoBack">
                 Back to Products
             </button>
         </div>
@@ -32,24 +48,34 @@ else
 }
 
 @code {
+
     [Parameter]
-    public int Id { get; set; }
+    public int ProductId { get; set; }
 
-    ProductModel? product;
+    Product? product;
+    bool loading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         try
         {
-            var products = ProductService.GetProducts();
-            product = products.FirstOrDefault(p => p.Id == Id);
-            StateHasChanged();
+            // API endpoint: api/Products/{ProductId}
+            product = await Http.GetFromJsonAsync<Product>(
+                $"http://localhost:5138/api/Products/{ProductId}");
         }
-        catch(Exception ex )
+        catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
+            product = null;
         }
+        finally
+        {
+            loading = false;
+        }
+    }
 
-
+    void GoBack()
+    {
+        Nav.NavigateTo("/Products");
     }
 }
