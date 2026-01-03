@@ -1,10 +1,10 @@
 ﻿@page "/checkout"
+@rendermode InteractiveServer
+
 @inject CartService CartService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject HttpClient Http
-@rendermode InteractiveServer
-@using WebsiteDesign.Models
 
 <h3>Checkout</h3>
 
@@ -26,14 +26,26 @@ else
             <div class="card p-3">
                 <h5>Customer Information</h5>
 
-                <input class="form-control mb-2" placeholder="Full Name" @bind="order.Name" />
-                <input class="form-control mb-2" placeholder="Email" @bind="order.Email" />
-                <input class="form-control mb-2" placeholder="Phone" @bind="order.Phone" />
-                <textarea class="form-control mb-2" placeholder="Address" @bind="order.Address"></textarea>
+                <input class="form-control mb-2"
+                       placeholder="Full Name"
+                       @bind="order.Name" />
+
+                <input class="form-control mb-2"
+                       placeholder="Email"
+                       @bind="order.Email" />
+
+                <input class="form-control mb-2"
+                       placeholder="Phone"
+                       @bind="order.Phone" />
+
+                <textarea class="form-control mb-2"
+                          placeholder="Address"
+                          @bind="order.Address"></textarea>
 
                 <button class="btn btn-success w-100"
+                        disabled="@placingOrder"
                         @onclick="PlaceOrder">
-                    Place Order
+                    @(placingOrder ? "Placing Order..." : "Place Order")
                 </button>
             </div>
         </div>
@@ -47,14 +59,14 @@ else
                 {
                     <div class="d-flex justify-content-between">
                         <span>@item.Name (x @item.Quantity)</span>
-                        <span>@(item.Price* item.Quantity)</span>
+                        <span>Rs. @(item.Price* item.Quantity)</span>
                     </div>
                 }
 
                 <hr />
 
                 <h5 class="text-end">
-                    Total: <b>@total</b>
+                    Total: <b>Rs. @total</b>
                 </h5>
             </div>
         </div>
@@ -62,87 +74,95 @@ else
 }
 
 @code {
+
     List<CartItem> cart = new();
-    bool loaded = false;
-    decimal total = 0;
+    bool loaded;
+    bool placingOrder;
+    decimal total;
 
     OrderModel order = new();
-    User obj = new User();
-
-
-
-
-
+    User obj = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            cart = await CartService.GetCart();
-            total = cart.Sum(x => x.Price * x.Quantity);
+        if (!firstRender) return;
 
+        // Load cart safely
+        cart = await CartService.GetCart();
+        total = cart.Sum(x => x.Price * x.Quantity);
+
+        // Load logged-in user from localStorage safely
+        try
+        {
             var userJson = await JS.InvokeAsync<string>("localStorage.getItem", "loggedUser");
             if (!string.IsNullOrEmpty(userJson))
             {
-                try
-                {
-                    obj = System.Text.Json.JsonSerializer.Deserialize<User>(userJson);
-                    if (obj != null)
-                    {
-                        order.Name = obj.Name;
-                        order.Email = obj.Email;
-                    }
-                }
-                catch { }
+                obj = System.Text.Json.JsonSerializer.Deserialize<User>(userJson) ?? new();
+                order.Name = obj.Name;
+                order.Email = obj.Email;
             }
-
-            loaded = true;
-            await InvokeAsync(StateHasChanged);
         }
+        catch (InvalidOperationException)
+        {
+            // prerender safety
+        }
+
+        loaded = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     async Task PlaceOrder()
     {
-        if (string.IsNullOrWhiteSpace(order.Name))
+        if (placingOrder) return;
+        if (!cart.Any()) return;
+        if (string.IsNullOrWhiteSpace(order.Name) ||
+            string.IsNullOrWhiteSpace(order.Phone) ||
+            string.IsNullOrWhiteSpace(order.Address))
             return;
 
-        if (!cart.Any())
-            return;
+        placingOrder = true;
 
-        // Build TblOrderMaster object to send to API
-
-        var orderMaster = new TblOrderMaster
+        try
         {
-            UserId = obj.UserId,
-            OrderDetails = cart.Select(x => new TblOrderDetail
+            var orderMaster = new TblOrderMaster
             {
-                ProductId = x.ProductId,
-                Quantity = x.Quantity,
-                Rate = x.Price
-            }).ToList()
-        };
+                UserId = obj.UserId,
+                OrderDetails = cart.Select(x => new TblOrderDetail
+                {
+                    ProductId = x.ProductId,
+                    Quantity = x.Quantity,
+                    Rate = x.Price
+                }).ToList()
+            };
 
-        // Call API to save order
-        var response = await Http.PostAsJsonAsync("http://localhost:5138/api/Orders/place-order", orderMaster);
+            var response = await Http.PostAsJsonAsync("api/Orders/place-order", orderMaster);
 
-        if (response.IsSuccessStatusCode)
-        {
-            await CartService.ClearCart();
-            Nav.NavigateTo("/order-success");
+            if (response.IsSuccessStatusCode)
+            {
+                await CartService.ClearCart();
+                Nav.NavigateTo("/order-success", true);
+            }
+            else
+            {
+                Console.WriteLine("Order placement failed");
+                // Optionally show toast / alert
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Order placement failed");
+            Console.WriteLine($"Error placing order: {ex.Message}");
+        }
+        finally
+        {
+            placingOrder = false;
         }
     }
 
-
-
     public class OrderModel
     {
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public string Address { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public string Address { get; set; } = "";
     }
 }

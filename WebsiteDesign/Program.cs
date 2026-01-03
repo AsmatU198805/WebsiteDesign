@@ -8,10 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<ProductService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<CartService>();
-
+builder.Services.AddScoped(sp =>
+    new HttpClient { BaseAddress = new Uri("http://localhost:5138/") });
 builder.Services.AddHttpClient();
 
 var app = builder.Build();

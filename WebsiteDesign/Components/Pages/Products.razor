@@ -1,87 +1,90 @@
-﻿@page "/Products1"
+﻿@page "/Products"
 @rendermode InteractiveServer
 
-@using WebsiteDesign.Models
-@inject WebsiteDesign.Services.ProductService ProductService
+@inject HttpClient Http
 @inject NavigationManager Nav
+@using WebsiteDesign.Models
 @inject WebsiteDesign.Services.CartService CartService
 
-
-
-<h3>Products List</h3>
-<br />
-
-<!-- Category Buttons -->
-<div class="btn-group mb-4" role="group">
-    <button class="btn @(selectedCategory == "All" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowAll">
-        All
-    </button>
-
-    <button class="btn @(selectedCategory == "Sports" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowSports">
-        Sports
-    </button>
-
-    <button class="btn @(selectedCategory == "Electronics" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowElectronics">
-        Electronics
-    </button>
-
-    <button class="btn @(selectedCategory == "Automobile" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowAutomobile">
-        Automobile
-    </button>
-
-    <button class="btn @(selectedCategory == "Lifestyle" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowLifestyle">
-        Lifestyle
-    </button>
-
-    <button class="btn @(selectedCategory == "Garments" ? "btn-primary" : "btn-outline-primary")"
-            @onclick="ShowGarments">
-        Garments
-    </button>
-</div>
-
 <div class="container">
+
+    <!-- CATEGORY FILTER BUTTONS -->
+    <div class="btn-group mb-4" role="group">
+        <button class="btn @(selectedCategory == null ? "btn-primary" : "btn-outline-primary")"
+                @onclick="ShowAll">
+            All
+        </button>
+
+        <button class="btn @(selectedCategory == category.Sports ? "btn-primary" : "btn-outline-primary")"
+                @onclick="() => FilterCategory(category.Sports)">
+            Sports
+        </button>
+
+        <button class="btn @(selectedCategory == category.Electronics ? "btn-primary" : "btn-outline-primary")"
+                @onclick="() => FilterCategory(category.Electronics)">
+            Electronics
+        </button>
+
+        <button class="btn @(selectedCategory == category.Automobile ? "btn-primary" : "btn-outline-primary")"
+                @onclick="() => FilterCategory(category.Automobile)">
+            Automobile
+        </button>
+
+        <button class="btn @(selectedCategory == category.LifeStyle ? "btn-primary" : "btn-outline-primary")"
+                @onclick="() => FilterCategory(category.LifeStyle)">
+            Lifestyle
+        </button>
+
+        <button class="btn @(selectedCategory == category.Garments ? "btn-primary" : "btn-outline-primary")"
+                @onclick="() => FilterCategory(category.Garments)">
+            Garments
+        </button>
+    </div>
+
+    <!-- PRODUCTS GRID -->
     <div class="row">
 
-        @if (!FilteredProducts.Any())
+        @if (FilteredProducts == null)
         {
-            <div class="col-12">
-                <div class="alert alert-secondary">
-                    No products in this category.
-                </div>
+            <p>Loading products...</p>
+        }
+        else if (!FilteredProducts.Any())
+        {
+            <div class="alert alert-warning">
+                No products found
             </div>
         }
         else
         {
-            @foreach (var p in FilteredProducts)
+            foreach (var v in FilteredProducts)
             {
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
-                        <img src="@p.Image"
-                             class="card-img-top img-fluid"
-                             alt="@p.Name" />
+                        <img src="/images/@v.ImageUrl"
+                             class="card-img-top img-fluid" />
 
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@p.Name</h5>
+                            <h5 class="card-title">@v.ProductName</h5>
 
                             <p class="card-text mb-2">
-                                <small class="text-muted">@p.Category</small>
+                                <small class="text-muted">@v.ProductCategory</small>
                             </p>
+
                             <p class="card-text mb-2">
-                                <small class="text-muted">@p.Price</small>
+                                <small class="text-muted">
+                                    Rs. @v.Price.ToString("N2")
+                                </small>
                             </p>
+
                             <div class="d-flex gap-2 mt-auto">
                                 <button class="btn btn-outline-primary w-50"
-                                        @onclick="() => GoToDetails(p.Id)">
+                                        @onclick="() => GoToDetails(v.ProductId)">
                                     Details
                                 </button>
 
-                                <button class="btn btn-success w-50"
-                                        @onclick="() => AddToCart(p)">
+                                <button class="btn btn-primary w-50"
+                                        disabled="@adding"
+                                        @onclick="() => AddToCart(v)">
                                     Add to Cart
                                 </button>
                             </div>
@@ -96,44 +99,55 @@
 
 @code {
 
-    string selectedCategory = "All";
+    List<Product> AllProducts = new();
+    List<Product> FilteredProducts = new();
+    bool adding;
 
-    List<ProductModel> AllProducts = new();
-    List<ProductModel> FilteredProducts = new();
 
-    protected override void OnInitialized()
+
+    category? selectedCategory = null;
+
+    protected override async Task OnInitializedAsync()
     {
-        AllProducts = ProductService.GetProducts();
+        try
+        {
+            AllProducts = await Http.GetFromJsonAsync<List<Product>>(
+                "http://localhost:5138/api/Products") ?? new();
+
+            FilteredProducts = AllProducts.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    void ShowAll()
+    {
+        selectedCategory = null;
         FilteredProducts = AllProducts.ToList();
     }
 
-    void ShowAll() => FilterCategory("All");
-    void ShowSports() => FilterCategory("Sports");
-    void ShowElectronics() => FilterCategory("Electronics");
-    void ShowAutomobile() => FilterCategory("Automobile");
-    void ShowLifestyle() => FilterCategory("Lifestyle");
-    void ShowGarments() => FilterCategory("Garments");
-
-    void FilterCategory(string category)
+    void FilterCategory(category cat)
     {
-        selectedCategory = category;
-
-        FilteredProducts = category == "All"
-            ? AllProducts.ToList()
-            : AllProducts
-                .Where(x => x.Category.Equals(category, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+        selectedCategory = cat;
+        FilteredProducts = AllProducts
+            .Where(x => x.ProductCategory == cat)
+            .ToList();
     }
 
 
-    async Task AddToCart(ProductModel product)
+
+    async Task AddToCart(Product product)
     {
+        adding = true;
         await CartService.AddToCart(product);
+        adding = false;
     }
 
-    void GoToDetails(int Id)
+
+    void GoToDetails(int productId)
     {
-        
-        Nav.NavigateTo($"/ProductDetails/{Id}");
+        Nav.NavigateTo($"ProductDetails/{productId}");
     }
 }
