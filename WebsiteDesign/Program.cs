@@ -13,10 +13,21 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri("http://localhost:5138/") });
 builder.Services.AddHttpClient();
+builder.Services.AddLocalization();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+string[] supportedCultures = ["en-US", "ur-PK"];
+var localizationOptions= new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
+
+
+// Configure the HTTP request p0ipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);

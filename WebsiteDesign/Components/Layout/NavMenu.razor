@@ -1,4 +1,8 @@
-﻿@inject CartService CartService
+﻿@using Microsoft.Extensions.Localization
+@using WebsiteDesign.Locales;
+@using System.Globalization
+@using WebsiteDesign.Components.Pages;
+@inject CartService CartService
 
 <header class="top-nav">
     <div class="nav-container">
@@ -8,15 +12,15 @@
             <RadzenMenu Orientation="Orientation.Horizontal"
                         Style="background: transparent; color: white; border: none; font-size: 17px;">
 
-                <RadzenMenuItem Text="Home" Path="/" Icon="home" />
+                <RadzenMenuItem Text=@localizer["Home"] Path="/" Icon="home" />
 
-                <RadzenMenuItem Text="Products" Path="/Products" Icon="shopping_cart" />
+                <RadzenMenuItem Text=@localizer["Products"] Path="/Products" Icon="shopping_cart" />
 
                 <!-- CART WITH BADGE -->
                 <RadzenMenuItem Path="/Cart">
                     <Template>
                         <span class="position-relative">
-                            🛒 Cart
+                            🛒 @localizer["Cart"]
                             @if (cartCount > 0)
                             {
                                 <span class="badge bg-danger position-absolute top-0 start-100 translate-middle ms-1">
@@ -29,11 +33,16 @@
 
 
                 
-                <RadzenMenuItem Text="Login" Path="/Auth" Icon="home" />
+                <RadzenMenuItem Text=@localizer["Login"] Path="/Auth" Icon="home" />
                 
-                <RadzenMenuItem Text="My Orders" Path="/order-history" Icon="receipt_long" />
+                <RadzenMenuItem Text=@localizer["MyOrders"] Path="/order-history" Icon="receipt_long" />
                 
+                    <CultureSelector />
+               
             </RadzenMenu>
+
+
+
         </div>
     </div>
 </header>

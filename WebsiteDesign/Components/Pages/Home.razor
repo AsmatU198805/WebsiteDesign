@@ -3,14 +3,23 @@
 @using System.Text.Json
 @inject IJSRuntime JS
 @using WebsiteDesign.Models
+@using Microsoft.Extensions.Localization
+@using WebsiteDesign.Locales;
+@using System.Globalization
 
-<PageTitle>Home</PageTitle>
+
+
+
+<PageTitle>@localizer["Home"]</PageTitle>
+
+@Thread.CurrentThread.CurrentCulture;
+@Thread.CurrentThread.CurrentUICulture;
 
 <!-- ================== Top Bar ================== -->
 <div class="d-flex justify-content-end p-1 bg-light">
     @if (!string.IsNullOrEmpty(loggedUsername))
     {
-        <span>Hello, @loggedUsername!</span>
+        <span>@localizer["Hello"], @loggedUsername!</span>
     }
 </div>
 
@@ -35,6 +44,10 @@
         </RadzenCarouselItem>
     </Items>
 </RadzenCarousel>
+<br >
+<h4>@localizer["HomeTitle1"]</h4>
+<h6>@localizer["HomeExplanation"]</h6>
+
 
 @code {
     string? loggedUsername;
