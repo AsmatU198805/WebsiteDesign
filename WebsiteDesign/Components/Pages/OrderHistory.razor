@@ -1,0 +1,132 @@
+﻿@page "/order-history"
+@rendermode InteractiveServer
+
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>My Order History</h3>
+
+@if (!loaded)
+{
+    <p>Loading orders...</p>
+}
+else if (!orders.Any())
+{
+    <div class="alert alert-info">
+        You have not placed any orders yet.
+    </div>
+}
+else
+{
+    @foreach (var order in orders)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between">
+                <div>
+                    <b>Order No:</b> @order.OrderNo
+                </div>
+                <div>
+                    @order.OrderDate.ToString("dd-MMM-yyyy")
+                </div>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in order.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="/images/@item.ImageUrl"
+                                         style="width:50px;height:50px;object-fit:cover"
+                                         class="rounded" />
+                                </td>
+                                <td>@item.ProductId</td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">Rs. @item.Rate</td>
+                                <td class="text-end">Rs. @item.Amount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="text-end">
+                    <b>Total: Rs. @order.TotalAmount</b>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+
+    bool loaded;
+    User user = new();
+    List<OrderHistoryVm> orders = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var userJson = await JS.InvokeAsync<string>(
+                "localStorage.getItem", "loggedUser");
+
+            if (string.IsNullOrEmpty(userJson))
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            user = System.Text.Json.JsonSerializer.Deserialize<User>(userJson) ?? new();
+
+            if (user.UserId == 0)
+            {
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            orders = await Http.GetFromJsonAsync<List<OrderHistoryVm>>(
+                $"api/Orders/user/{user.UserId}") ?? new();
+        }
+        catch (InvalidOperationException)
+        {
+            // prerender safety
+        }
+
+        loaded = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // View Models (UI only)
+    public class OrderHistoryVm
+    {
+        public int OrderId { get; set; }
+        public string OrderNo { get; set; } = "";
+        public DateTime OrderDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public List<OrderItemVm> Items { get; set; } = new();
+    }
+
+    public class OrderItemVm
+    {
+        public int ProductId { get; set; }
+
+        public string ImageUrl { get; set; } = "";   // ✅ MATCHES API
+
+        public int Quantity { get; set; }
+        public decimal Rate { get; set; }
+        public decimal Amount { get; set; }
+    }
+}

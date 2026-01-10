@@ -54,5 +54,37 @@ namespace WebAPI.Controllers
             });
         }
 
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUserOrders(int userId)
+        {
+            var orders = _context.TblOrderMaster
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.OrderDate)
+                .Select(o => new
+                {
+                    o.OrderNo,
+                    o.OrderDate,
+                    o.TotalAmount,
+                    Items = o.OrderDetails.Select(d => new
+                    {
+                        d.ProductId,
+
+                        // ✅ ImageUrl from Product table
+                        ImageUrl = _context.Products
+                            .Where(p => p.ProductId == d.ProductId)
+                            .Select(p => p.ImageUrl)
+                            .FirstOrDefault(),
+
+                        d.Quantity,
+                        d.Rate,
+                        d.Amount
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(orders);
+        }
+
     }
 }

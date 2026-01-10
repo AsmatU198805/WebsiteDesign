@@ -23,7 +23,7 @@ namespace WebsiteDesign.Services
             OnCartChanged?.Invoke();
         }
 
-        // ✅ SAFE: does not crash during prerender
+    
         public async Task<List<CartItem>> GetCart()
         {
             try
@@ -33,7 +33,7 @@ namespace WebsiteDesign.Services
             }
             catch (InvalidOperationException)
             {
-                // JS not available yet (prerender)
+                
                 return new List<CartItem>();
             }
         }
